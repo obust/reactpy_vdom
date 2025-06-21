@@ -1,0 +1,10 @@
+
+# pixi environments
+.pixi
+*.egg-info
+CLAUDE.md
+
+.*
+
+!.gitignore
+!.gitattributes
