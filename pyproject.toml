@@ -1,0 +1,14 @@
+[tool.pixi.workspace]
+authors = ["Romain Lepert <romlepert@gmail.com>"]
+channels = ["https://conda.modular.com/max-nightly", "https://repo.prefix.dev/modular-community", "conda-forge"]
+name = "reactpy-vdom"
+platforms = ["osx-arm64"]
+version = "0.1.0"
+
+[tool.pixi.tasks]
+main = "mojo run src/example.mojo"
+test = "mojo test -I test"
+
+[tool.pixi.dependencies]
+modular = "==25.4.0"
+emberjson = "==0.1.5"
