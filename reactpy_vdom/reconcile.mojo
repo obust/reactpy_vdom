@@ -102,8 +102,6 @@ fn diff(src: Optional[Element], dst: Optional[Element], path: List[Int] = []) ->
     if src is not None and dst is not None:
         src_ = src.value()
         dst_ = dst.value()
-        print(src_.tag, dst_.tag)
-        print(src_.key.or_else(""), dst_.key.or_else(""))
         if src_.tag != dst_.tag or src_.key != dst_.key:
             patches.append(Patch(action="replace", path=path, value=dst))
             return patches
