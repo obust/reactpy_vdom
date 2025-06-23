@@ -2,8 +2,9 @@
 # pixi environments
 .pixi
 *.egg-info
-CLAUDE.md
 __mojocache__
+__pycache__
+CLAUDE.md
 
 .*
 
