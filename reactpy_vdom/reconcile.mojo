@@ -1,7 +1,7 @@
 from collections.set import Set
 from builtin.sort import sort
 from emberjson import JSON
-
+from python import PythonObject, Python
 from .vdom import Element, get_node, insert_node, set_node
 from .utils import dict_equal, enumerate
 
@@ -40,16 +40,25 @@ struct Patch(Copyable, Movable, EqualityComparable, Representable, Stringable):
     fn __str__(self) -> String:
         return self.__repr__()
 
+    fn python(self: Self) raises -> PythonObject:
+        action = Python.str(self.action)
+        path = Python.list([Python.int(i) for i in self.path])
+        value = self.value.value().python() if self.value is not None else PythonObject(None)
+        return Python.dict(action=action, path=path, value=value)
+
     fn json(self: Self) -> JSON:
         value = self.value.value().json() if self.value is not None else Null()
-        return JSON.object(
-            "action": self.action,
-            "path": self.path,
+        return JSON.object({
+            "action": JSON.string(self.action),
+            "path": JSON.array(self.path),
             "value": value,
-        )
+        })
 
-struct ListPatch(Copyable, Movable, EqualityComparable, Stringable, Representable):
+struct ListPatch(Copyable, Movable, Defaultable, EqualityComparable, Stringable, Representable):
     var patches: List[Patch]
+
+    fn __init__(out self):
+        self.patches = List[Patch]()
 
     fn __init__(out self, patches: List[Patch]):
         self.patches = patches
@@ -79,14 +88,18 @@ struct ListPatch(Copyable, Movable, EqualityComparable, Stringable, Representabl
     fn __iadd__(mut self, other: ListPatch):
         self.patches += other.patches
 
+    fn python(self) raises -> PythonObject:
+        return Python.list([patch.python() for patch in self.patches])
+
     fn json(self) -> JSON:
-        return JSON.array(self.patches.map(lambda p: p.json()))
+        return JSON.array([patch.json() for patch in self.patches])
 
     fn __repr__(self) -> String:
         return "ListPatch(" + self.patches.__str__() + ")"
 
     fn __str__(self) -> String:
         return self.patches.__str__()
+
 
 fn diff(src: Optional[Element], dst: Optional[Element], path: List[Int] = []) -> ListPatch:
     patches = ListPatch([])
@@ -238,3 +251,33 @@ fn _diff_children_key(src: List[Element], dst: List[Element], path: List[Int] = 
         patches.append(patch)
 
     return patches
+
+
+##################
+# PYTHON EXPORTS #
+##################
+
+fn py_diff(src: PythonObject, dst: PythonObject) raises -> PythonObject:
+    src_ptr = src.downcast_value_ptr[Element]()
+    dst_ptr = dst.downcast_value_ptr[Element]()
+    patches = diff(src_ptr[], dst_ptr[])
+    return PythonObject(alloc=patches^)
+
+fn py_apply(element: PythonObject, patches: PythonObject, inplace: PythonObject) raises -> PythonObject:
+    element_ptr = element.downcast_value_ptr[Element]()
+    patches_ptr = patches.downcast_value_ptr[ListPatch]()
+    inplace_ = Bool(inplace)
+    patched = patches_ptr[](element_ptr[], inplace=inplace_)
+    return PythonObject(alloc=patched^)
+
+
+fn ListPatch_python(self: PythonObject) raises -> PythonObject:
+    self_ptr = self.downcast_value_ptr[ListPatch]()
+    return self_ptr[].python()
+
+# fn ListPatch_json(self: PythonObject) raises -> PythonObject:
+#     self_ptr = self.downcast_value_ptr[ListPatch]()
+#     json_str = self_ptr[].json().to_string()
+#     return PythonObject(json_str)
+
+
