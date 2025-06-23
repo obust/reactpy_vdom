@@ -97,7 +97,7 @@ pixi run test
 
 ## Benchmark
 
-Run benchmark suite
+Run benchmark suite inspired by [js-framework-benchmark](https://github.com/krausest/js-framework-benchmark)
 
 ```bash
 pixi run bench
