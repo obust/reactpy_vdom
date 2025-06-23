@@ -2,7 +2,11 @@
 # pixi environments
 .pixi
 *.egg-info
+__mojocache__
+__pycache__
 CLAUDE.md
+
+reactpy_vdom/_vdom.so
 
 .*
 

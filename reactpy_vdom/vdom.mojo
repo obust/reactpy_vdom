@@ -1,14 +1,23 @@
 from emberjson import JSON, Null
 from collections import Set
+from python import PythonObject, Python
+from os import abort
 
 from .utils import dict_equal, dict_keys, enumerate
 
-struct Element(Copyable, Movable, EqualityComparable, Stringable, Representable):
+struct Element(Copyable, Movable, Defaultable, EqualityComparable, Stringable, Representable):
     var tag: String
     var attributes: Dict[String, String]
     var children: List[Element]
     var text: Optional[String]
     var key: Optional[String]
+
+    fn __init__(out self):
+        self.tag = String()
+        self.attributes = Dict[String, String]()
+        self.children = List[Element]()
+        self.text = Optional[String](None)
+        self.key = Optional[String](None)
 
     fn __init__(out self, tag: String, attributes: Dict[String, String], children: List[Element], key: Optional[String] = None):
         self.tag = tag
@@ -140,6 +149,16 @@ struct Element(Copyable, Movable, EqualityComparable, Stringable, Representable)
         except Error:
             pass
 
+    fn python(self) raises -> PythonObject:
+        tag = Python.str(self.tag)
+        attributes = Python.dict()
+        for ref key in self.attributes.keys():
+            attributes[Python.str(key)] = Python.str(self.attributes[key])
+        children = Python.list([child.python() for child in self.children])
+        text = Python.str(self.text.value()) if self.text is not None else PythonObject(None)
+        key = Python.str(self.key.value()) if self.key is not None else PythonObject(None)
+        return Python.dict(tag=tag, attributes=attributes, children=children, text=text, key=key)
+
     fn json(self) -> JSON:
         var obj = JSON.object()
         obj["tag"] = self.tag
@@ -175,64 +194,38 @@ struct Element(Copyable, Movable, EqualityComparable, Stringable, Representable)
             return Element(self.tag, attributes, children, key=self.key)
 
 
-fn get_node(owned root: Element, path: List[Int]) -> Optional[Element]:
-    # current = root^
-    for index in path:
-        if index < 0 or index >= len(root.children):
-            return None
-        ref root = root.children[index]
-    return root
 
-fn set_node(root: Element, path: List[Int], node: Element) -> Element:
-    if len(path) == 0:
-        return node  # replace root
+##################
+# PYTHON EXPORTS #
+##################
 
-    parent_path = path[:-1]
-    index = path[-1]
-    parent = get_node(root, parent_path)
-    if parent is None:
-        return root  # invalid path
 
-    parent_ = parent.value()
-    if index >= len(parent_.children):
-        parent_.children.append(node)
+fn create_element(tag: PythonObject, attributes: PythonObject, kwargs: PythonObject) raises -> PythonObject:
+    tag_ = String(tag)
+
+    attributes_: Dict[String, String] = {}
+    for item in attributes.items():
+        key, value = item[0], item[1]
+        attributes_[String(key)] = String(value)
+
+    py_none = PythonObject(None)
+    key = kwargs["key"]
+    if key is py_none:
+        key_: Optional[String] = None
     else:
-        parent_.children[index] = node
+        key_: Optional[String] = String(key)
 
-    return root
+    text = kwargs["text"]
+    children = kwargs["children"]
 
-fn get_node2(root: Element) -> ref [root] Element:
-    return root
-
-fn insert_node(mut root: Element, path: List[Int], node: Element) -> Element:
-    print("inserting node at index : " + String(",").join(path) + " " + String(node))
-    if len(path) == 0:
-        return node  # replace root
-
-    # parent_path = path[:-1]
-    # parent = get_node(root, parent_path)
-    # if parent is None:
-    #     return root  # invalid path
-
-    # parent_ = parent.value()
-
-    parent_ = get_node2(root)
-    print("parent : " + String(parent_))  # parent : <div></div>
-
-    index = path[-1]
-    if index >= len(parent_.children):
-        parent_.children.append(node)
+    if text is not py_none:
+        text_ = String(text)
+        element = Element(tag_, attributes_, text_)
     else:
-        parent_.children.insert(index, node)
+        children_: List[Element] = []
+        for child in children:
+            child_ptr = child.downcast_value_ptr[Element]()
+            children_.append(child_ptr[])
+        element = Element(tag_, attributes_, children_)
 
-
-    # if index >= len(root.children):
-    #     root.children.append(node)
-    # else:
-    #     root.children.insert(index, node)
-
-    print("parent : " + String(parent_))  # parent : <div><p>Hello world</p></div>
-
-    print("root : " + String(root))  # root : <div></div>
-
-    return root
+    return PythonObject(alloc=element^)
