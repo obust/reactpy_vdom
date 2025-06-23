@@ -136,7 +136,7 @@ struct Element(Copyable, Movable, Defaultable, EqualityComparable, Stringable, R
         except Error:
             pass
 
-    fn remove(mut self, path: List[Int]):
+    fn remove(mut self, path: List[Int]) -> Optional[Element]:
         """Remove node at path."""
         if len(path) == 0:
             return
@@ -145,9 +145,12 @@ struct Element(Copyable, Movable, Defaultable, EqualityComparable, Stringable, R
             ref parent = self.get(path[:-1])
 
             index = path[-1]
-            _ = parent.children.pop(index)
+            element = parent.children.pop(index)
+            return element
         except Error:
             pass
+
+        return
 
     fn python(self) raises -> PythonObject:
         tag = Python.str(self.tag)
