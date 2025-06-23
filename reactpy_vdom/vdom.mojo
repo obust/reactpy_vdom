@@ -216,16 +216,16 @@ fn create_element(tag: PythonObject, attributes: PythonObject, kwargs: PythonObj
         key_: Optional[String] = String(key)
 
     text = kwargs["text"]
-    if text is py_none:
-        text_: Optional[String] = None
-    else:
-        text_: Optional[String] = String(text)
-
     children = kwargs["children"]
-    children_: List[Element] = []
-    for child in children:
-        child_ptr = child.downcast_value_ptr[Element]()
-        children_.append(child_ptr[])
 
-    element = Element(tag_, attributes_, children_)
+    if text is not py_none:
+        text_ = String(text)
+        element = Element(tag_, attributes_, text_)
+    else:
+        children_: List[Element] = []
+        for child in children:
+            child_ptr = child.downcast_value_ptr[Element]()
+            children_.append(child_ptr[])
+        element = Element(tag_, attributes_, children_)
+
     return PythonObject(alloc=element^)
