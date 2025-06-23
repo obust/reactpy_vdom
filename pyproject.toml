@@ -8,6 +8,7 @@ version = "0.1.0"
 [tool.pixi.tasks]
 main = "mojo run -I . src/example.mojo"
 test = "mojo test -I . test"
+bench = "mojo run -I . bench.mojo"
 build = "mojo build -I . export.mojo --emit shared-lib -o reactpy_vdom/_vdom.so"
 
 [tool.pixi.dependencies]
