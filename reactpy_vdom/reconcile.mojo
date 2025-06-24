@@ -20,7 +20,7 @@ struct Patch(Copyable, Movable, EqualityComparable, Representable, Stringable):
         if self.action == "insert":
             root.insert(self.path, self.value.value())
         elif self.action == "remove":
-            root.remove(self.path)
+            _ = root.remove(self.path)
         elif self.action == "replace":
             root.set(self.path, self.value.value())
         elif self.action == "update":
