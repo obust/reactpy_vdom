@@ -102,7 +102,7 @@ struct ListPatch(Copyable, Movable, Defaultable, EqualityComparable, Stringable,
         return self.patches.__str__()
 
 
-fn diff(src: Element, dst: Element, path: List[Int] = []) -> ListPatch:
+fn diff(ref src: Element, ref dst: Element, path: List[Int] = []) -> ListPatch:
     patches = ListPatch([])
 
     # case replace
@@ -148,8 +148,8 @@ fn _diff_children_index(src: List[Element], dst: List[Element], path: List[Int] 
             patches.append(Patch(action="remove", path=path + [i], value=None))
             continue
 
-        src_child = src[i]
-        dst_child = dst[i]
+        ref src_child = src[i]
+        ref dst_child = dst[i]
         child_path = path + [i]
         patches += diff(src_child, dst_child, child_path)
 
