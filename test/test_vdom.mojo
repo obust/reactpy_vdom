@@ -79,14 +79,14 @@ def test_remove():
     ])
 
     # check root (can't remove at root)
-    root.remove([])
+    _ = root.remove([])
     assert_equal(root, Element("ul", {}, [
         Element("li", {}, "foo"),
         Element("li", {}, "bar"),
     ]))
 
     # check nested
-    root.remove([1])
+    _ = root.remove([1])
     assert_equal(root.children, [
         Element("li", {}, "foo")
     ])
