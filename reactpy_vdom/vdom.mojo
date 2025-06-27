@@ -19,21 +19,19 @@ struct Element(Copyable, Movable, Defaultable, EqualityComparable, Stringable, R
         self.text = Optional[String](None)
         self.key = Optional[String](None)
 
-    fn __init__(out self, tag: String, attributes: Dict[String, String], children: List[Element], key: Optional[String] = None):
+    fn __init__(out self, owned tag: String, owned attributes: Dict[String, String], owned children: List[Element], owned key: Optional[String] = None):
         self.tag = tag
         self.attributes = attributes
         self.children = children
         self.text = Optional[String](None)
         self.key = key
-        # self.key = Optional[String](None)
 
-    fn __init__(out self, tag: String, attributes: Dict[String, String], text: String, key: Optional[String] = None):
+    fn __init__(out self, owned tag: String, owned attributes: Dict[String, String], owned text: String, owned key: Optional[String] = None):
         self.tag = tag
         self.attributes = attributes
         self.children = []
         self.text = Optional(text)
         self.key = key
-        # self.key = Optional[String](None)
 
     fn __eq__(self, other: Self) -> Bool:
         return self.tag == other.tag and dict_equal(self.attributes, other.attributes) and self.children == other.children and self.text == other.text and self.key == other.key
@@ -64,21 +62,6 @@ struct Element(Copyable, Movable, Defaultable, EqualityComparable, Stringable, R
         s += "</" + self.tag + ">"
 
         return s
-
-    # fn get(ref self, path: List[Int]) raises -> ref [self] Self:
-    #     """Get node at path."""
-    #     var current = Pointer(to=self)
-    #     for index in path:
-    #         debug_assert(-len(current[].children) <= index < len(current[].children), "index: ",
-    #             index,
-    #             " is out of bounds for `children` of length: ",
-    #             len(current[].children))
-    #         if index < 0 or index >= len(current[].children):
-    #             current_ = Pointer(to=current[].children[index])
-    #             current = rebind[Pointer[Element, __origin_of(self)]](current_)
-    #         else:
-    #             raise Error("index: ", index, " is out of bounds for `children` of length: ", len(current[].children))
-    #     return current[]
 
     fn get(ref self, path: List[Int]) raises -> ref [self] Self:
         """Get node at path."""
@@ -181,7 +164,7 @@ struct Element(Copyable, Movable, Defaultable, EqualityComparable, Stringable, R
             obj["key"] = self.key.value()
         return obj
 
-    fn clone(self) -> Self:
+    fn clone(self, include_children: Bool = True) -> Self:
         attributes = Dict[String, String]()
         for key in self.attributes.keys():
             try:
@@ -192,8 +175,9 @@ struct Element(Copyable, Movable, Defaultable, EqualityComparable, Stringable, R
             return Element(self.tag, attributes, self.text.value(), key=self.key)
         else:
             children: List[Element] = []
-            for child in self.children:
-                children.append(child.clone())
+            if include_children:
+                for child in self.children:
+                    children.append(child.clone())
             return Element(self.tag, attributes, children, key=self.key)
 
 

@@ -29,7 +29,7 @@ def test_patch_remove():
     dst = Element("div", {}, [])
     var patches = diff(src, dst)
     var expected = ListPatch([
-        Patch(action="remove", path=[0], value=None)
+        Patch(action="remove", path=[0])
     ])
     assert_equal(patches, expected)
     assert_equal(patches(src), dst)
@@ -118,8 +118,8 @@ def test_patch_keyed_children():
     ])
     patches = diff(src, dst)
     expected = ListPatch([
-        Patch(action="remove", path=[1], value=None),
-        Patch(action="remove", path=[0], value=None),
+        Patch(action="remove", path=[1]),
+        Patch(action="remove", path=[0]),
         Patch(action="insert", path=[0], value=Element("li", {}, "foo", key=Optional(String("foo")))),
         Patch(action="insert", path=[1], value=Element("li", {}, "a", key=Optional(String("a")))),
         Patch(action="insert", path=[2], value=Element("li", {}, "b", key=Optional(String("b")))),

@@ -85,6 +85,7 @@ fn main() raises:
     m.bench_with_input[Int, bench_diff_select_row]("diff_select_row[100]", 100, [get_throughput_elems(100)])
     m.bench_with_input[Int, bench_diff_select_row]("diff_select_row[1000]", 1000, [get_throughput_elems(1000)])
     m.bench_with_input[Int, bench_diff_select_row]("diff_select_row[10000]", 10_000, [get_throughput_elems(10_000)])
+
     m.bench_with_input[Int, bench_diff_partial_update]("diff_partial_update[100]", 100, [get_throughput_elems(100)])
     m.bench_with_input[Int, bench_diff_partial_update]("diff_partial_update[1000]", 1_000, [get_throughput_elems(1_000)])
     m.bench_with_input[Int, bench_diff_partial_update]("diff_partial_update[10000]", 10_000, [get_throughput_elems(10_000)])
