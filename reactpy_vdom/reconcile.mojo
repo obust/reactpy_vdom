@@ -2,21 +2,28 @@ from collections.set import Set
 from builtin.sort import sort
 from emberjson import JSON
 from python import PythonObject, Python
+from memory import Pointer, UnsafePointer, ImmutableOrigin
 
 from .vdom import Element, get_node, insert_node, set_node
 from .utils import dict_equal, enumerate
 
-@fieldwise_init
+
 struct Patch(Copyable, Movable, EqualityComparable, Representable, Stringable):
     var action: String  # "insert", "remove", "replace", "update"
     var path: List[Int]
     var value: Optional[Element]
 
-    fn __call__(self: Self, root_: Element, inplace: Bool = True) -> Element:
-        var root = root_
-        if not inplace:
-            root = root.clone()
+    fn __init__(out self, owned action: String, path: List[Int], value: Element):
+        self.action = action^
+        self.path = path
+        self.value = Optional[Element](value)
 
+    fn __init__(out self, owned action: String, path: List[Int]):
+        self.action = action^
+        self.path = path
+        self.value = Optional[Element](None)
+
+    fn __call__(self: Self, mut root: Element) -> Element:
         if self.action == "insert":
             root.insert(self.path, self.value.value())
         elif self.action == "remove":
@@ -24,7 +31,7 @@ struct Patch(Copyable, Movable, EqualityComparable, Representable, Stringable):
         elif self.action == "replace":
             root.set(self.path, self.value.value())
         elif self.action == "update":
-            root.update(self.path, self.value.value())
+            root.update(self.path, self.value.value().clone(include_children=False))
 
         return root
 
@@ -44,7 +51,11 @@ struct Patch(Copyable, Movable, EqualityComparable, Representable, Stringable):
     fn python(self: Self) raises -> PythonObject:
         action = Python.str(self.action)
         path = Python.list([Python.int(i) for i in self.path])
-        value = self.value.value().python() if self.value is not None else PythonObject(None)
+
+        if self.value is not None:
+            value = self.value.value().python()
+        else:
+            value = PythonObject(None)
         return Python.dict(action=action, path=path, value=value)
 
     fn json(self: Self) -> JSON:
@@ -61,7 +72,7 @@ struct ListPatch(Copyable, Movable, Defaultable, EqualityComparable, Stringable,
     fn __init__(out self):
         self.patches = List[Patch]()
 
-    fn __init__(out self, patches: List[Patch]):
+    fn __init__(out self, owned patches: List[Patch]):
         self.patches = patches
 
     fn __call__(self, root_: Element, inplace: Bool = True) -> Element:
@@ -70,7 +81,7 @@ struct ListPatch(Copyable, Movable, Defaultable, EqualityComparable, Stringable,
             root = root.clone()
 
         for patch in self.patches:
-            root = patch(root, inplace=True)
+            root = patch(root)
 
         return root
 
@@ -112,11 +123,7 @@ fn diff(ref src: Element, ref dst: Element, path: List[Int] = []) -> ListPatch:
 
     # case update
     if not dict_equal(src.attributes, dst.attributes) or src.text != dst.text:
-        if dst.text is not None:
-            el = Element(dst.tag, dst.attributes, dst.text.value(), key=dst.key)
-        else:
-            el = Element(dst.tag, dst.attributes, [], key=dst.key)
-        patches.append(Patch(action="update", path=path, value=el))
+        patches.append(Patch(action="update", path=path, value=dst.clone(include_children=False)))
 
     # Recursively diff children
     has_keys = True if len(dst.children) > 0 else False
@@ -145,7 +152,7 @@ fn _diff_children_index(src: List[Element], dst: List[Element], path: List[Int] 
             patches.append(Patch(action="insert", path=path + [i], value=dst[i]))
             continue
         elif i >= dst_len:
-            patches.append(Patch(action="remove", path=path + [i], value=None))
+            patches.append(Patch(action="remove", path=path + [i]))
             continue
 
         ref src_child = src[i]
@@ -181,18 +188,19 @@ fn _diff_children_key(src: List[Element], dst: List[Element], path: List[Int] = 
 
                 if old_index != new_index:
                     # Defer reordering to avoid index shifts
-                    remove_ops.append(Patch(action="remove", path=path + [old_index], value=None))
+                    remove_ops.append(Patch(action="remove", path=path + [old_index]))
                     insert_ops.append(Patch(action="insert", path=path + [new_index], value=dst_child))
             except KeyError:
                 pass
         else:
             insert_ops.append(Patch(action="insert", path=path + [new_index], value=dst_child))
+            pass
 
     for key in src_key_map.keys():
         if key not in used_keys:
             try:
                 old_index, _ = src_key_map[key]
-                remove_ops.append(Patch(action="remove", path=path + [old_index], value=None))
+                remove_ops.append(Patch(action="remove", path=path + [old_index]))
             except KeyError:
                 pass
 

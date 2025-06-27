@@ -164,7 +164,7 @@ struct Element(Copyable, Movable, Defaultable, EqualityComparable, Stringable, R
             obj["key"] = self.key.value()
         return obj
 
-    fn clone(self) -> Self:
+    fn clone(self, include_children: Bool = True) -> Self:
         attributes = Dict[String, String]()
         for key in self.attributes.keys():
             try:
@@ -175,8 +175,9 @@ struct Element(Copyable, Movable, Defaultable, EqualityComparable, Stringable, R
             return Element(self.tag, attributes, self.text.value(), key=self.key)
         else:
             children: List[Element] = []
-            for child in self.children:
-                children.append(child.clone())
+            if include_children:
+                for child in self.children:
+                    children.append(child.clone())
             return Element(self.tag, attributes, children, key=self.key)
 
 
