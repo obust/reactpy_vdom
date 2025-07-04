@@ -3337,7 +3337,7 @@ packages:
 - pypi: ./
   name: reactpy-vdom
   version: 0.1.0
-  sha256: 3209cd40c596267894fd080eb8f3cadc1b6bd971ba17e1204ae5d922c7d20203
+  sha256: 1fcc59ef3b4148f1c2b87170aca6cc6154d60dd6bf6af61c4b0842c45ebe0c58
   editable: true
 - conda: https://conda.anaconda.org/conda-forge/osx-arm64/readline-8.2-h1d1bf99_2.conda
   sha256: 7db04684d3904f6151eff8673270922d31da1eea7fa73254d01c437f49702e34
