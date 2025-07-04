@@ -1,7 +1,18 @@
+[project]
+name = "reactpy_vdom"
+version = "0.1.0"
+description = "A VDOM library for ReactPy"
+authors = [{ name = "Romain Lepert", email = "romlepert@gmail.com" }]
+dependencies = []
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
 [tool.pixi.workspace]
 authors = ["Romain Lepert <romlepert@gmail.com>"]
 channels = ["https://conda.modular.com/max-nightly", "https://repo.prefix.dev/modular-community", "conda-forge"]
-name = "reactpy-vdom"
+name = "reactpy_vdom"
 platforms = ["osx-arm64"]
 version = "0.1.0"
 
@@ -14,3 +25,11 @@ build = "mojo build -I . export.mojo --emit shared-lib -o reactpy_vdom/_vdom.so"
 [tool.pixi.dependencies]
 modular = "==25.4.0"
 emberjson = "==0.1.5"
+
+[tool.pixi.pypi-dependencies]
+reactpy_vdom = { path = ".", editable = true }
+pytest = "*"
+pytest-benchmark = "*"
+
+[tool.setuptools.packages.find]
+exclude = ["bench*"]
