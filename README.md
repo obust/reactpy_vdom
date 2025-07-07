@@ -49,6 +49,12 @@ print(String(patched))
 
 ### Python
 
+Build python `_vdom.so` extension
+
+```
+pixi run build
+```
+
 ```python
 from reactpy_vdom import el, diff, apply
 
@@ -97,10 +103,13 @@ pixi run test
 
 ## Benchmark
 
+
+### Mojo Benchmark
+
 Run benchmark suite inspired by [js-framework-benchmark](https://github.com/krausest/js-framework-benchmark)
 
 ```bash
-pixi run bench
+pixi run bench_mojo
 ```
 
 | name                        | met (ms)              | iters   | throughput (GElems/s)  | min (ms)              | mean (ms)             | max (ms)              | duration (ms) |
@@ -132,3 +141,20 @@ pixi run bench
 | diff_swap_rows[100]         | 0.26331263858093124   | 4510    | 0.0003797766812065278  | 0.2633126385809313    | 0.26331263858093124   | 0.2633126385809313    | 1187.54       |
 | diff_swap_rows[1000]        | 2.5979978540772533    | 466     | 0.0003849117882952125  | 2.597997854077253     | 2.5979978540772533    | 2.597997854077253     | 1210.667      |
 | diff_swap_rows[10000]       | 30.13174358974359     | 39      | 0.0003318759158498832  | 30.13174358974359     | 30.13174358974359     | 30.13174358974359     | 1175.138      |
+
+### Python Benchmark
+
+```bash
+pixi run bench_py
+```
+
+```
+----------------------------------------------------------------------------------------------------------
+Name (time in us)                            Min                     Max                    Mean
+----------------------------------------------------------------------------------------------------------
+test_diff_clear_rows_1000               431.5830 (1.0)          767.8330 (1.0)          449.8869 (1.0)
+test_patches_to_python_1000           7,991.2080 (18.52)      9,658.4160 (12.58)      8,201.4941 (18.23)
+test_diff_append_rows_1000_1000      10,731.0420 (24.86)     18,912.8330 (24.63)     11,194.5240 (24.88)
+test_create_rows_1000               196,904.7920 (456.24)   201,692.5410 (262.68)   198,424.3664 (441.05)
+----------------------------------------------------------------------------------------------------------
+```

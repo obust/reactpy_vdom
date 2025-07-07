@@ -212,7 +212,8 @@ fn create_element(tag: PythonObject, attributes: PythonObject, kwargs: PythonObj
         children_: List[Element] = []
         for child in children:
             child_ptr = child.downcast_value_ptr[Element]()
-            children_.append(child_ptr[])
+            child_ = child_ptr[]
+            children_.append(child_)
         element = Element(tag_, attributes_, children_)
 
     return PythonObject(alloc=element^)
